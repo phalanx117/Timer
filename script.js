@@ -1,10 +1,9 @@
-let timers = []; // タイマー設定のリスト {minutes, seconds, totalSeconds}
+let timers = [];
 let currentTimerIndex = 0;
 let remainingSeconds = 0;
 let intervalId = null;
 let isRunning = false;
 
-// DOM要素
 const minInput = document.getElementById('input-min');
 const secInput = document.getElementById('input-sec');
 const addBtn = document.getElementById('add-btn');
@@ -14,39 +13,40 @@ const statusText = document.getElementById('status-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 
-// 音声再生用 (Web Audio API) - ビープ音
+// 音声再生 (エラー対策付き)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 function playBeep() {
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.5); // 0.5秒鳴らす
+    try {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.log("音の再生に失敗しましたが続行します", e);
+    }
 }
 
-// 時間フォーマット (00:00)
 function formatTime(totalSec) {
+    if (totalSec < 0) totalSec = 0;
     const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
     const s = (totalSec % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
 }
 
-// リストへの追加処理
 addBtn.addEventListener('click', () => {
     const m = parseInt(minInput.value) || 0;
     const s = parseInt(secInput.value) || 0;
     const total = m * 60 + s;
-
     if (total <= 0) return;
-
     timers.push({ totalSeconds: total, originalTotal: total });
     renderList();
 });
 
-// リスト描画
 function renderList() {
     timerList.innerHTML = '';
     timers.forEach((timer, index) => {
@@ -55,77 +55,67 @@ function renderList() {
         if (index === currentTimerIndex && isRunning) {
             div.classList.add('active');
         }
-        div.innerHTML = `
-            <span>#${index + 1}</span>
-            <span>${formatTime(timer.originalTotal)}</span>
-        `;
+        div.innerHTML = `<span>#${index + 1}</span><span>${formatTime(timer.originalTotal)}</span>`;
         timerList.appendChild(div);
     });
 }
 
-// タイマースタート
-startBtn.addEventListener('click', () => {
-    if (timers.length === 0) return;
-    if (isRunning) return; // 既に実行中なら何もしない
+function updateDisplay() {
+    mainDisplay.innerText = formatTime(remainingSeconds);
+}
 
-    // AudioContextの再開(ユーザー操作が必要なため)
+// 共通のカウントダウン処理
+function tick() {
+    remainingSeconds--;
+    updateDisplay();
+
+    // 0秒になったら終了処理（ここが修正ポイント：<0でなく0で判定して即次へ行くか調整）
+    if (remainingSeconds < 0) {
+        clearInterval(intervalId);
+        playBeep();
+        
+        // 次のタイマーへ
+        currentTimerIndex++;
+        startNextTimer();
+    }
+}
+
+function startNextTimer() {
+    if (currentTimerIndex < timers.length) {
+        // 次がある場合
+        remainingSeconds = timers[currentTimerIndex].totalSeconds;
+        statusText.innerText = `タイマー ${currentTimerIndex + 1} 実行中`;
+        renderList();
+        updateDisplay();
+        
+        // 1秒後に減り始める
+        intervalId = setInterval(tick, 1000);
+    } else {
+        // 全て完了
+        finishAll();
+    }
+}
+
+startBtn.addEventListener('click', () => {
+    if (timers.length === 0 || isRunning) return;
+    
+    // 音声コンテキストの再開
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
     isRunning = true;
     startBtn.disabled = true;
     addBtn.disabled = true;
 
-    // 初回スタートまたは一時停止からの再開
-    if (remainingSeconds === 0 && currentTimerIndex < timers.length) {
-        remainingSeconds = timers[currentTimerIndex].totalSeconds;
+    // もし最初のスタートなら初期値をセット
+    if (remainingSeconds === 0 && currentTimerIndex === 0) {
+        remainingSeconds = timers[0].totalSeconds;
+        statusText.innerText = `タイマー 1 実行中`;
     }
     
-    statusText.innerText = `タイマー ${currentTimerIndex + 1} 実行中`;
-    renderList(); // アクティブ表示更新
+    renderList();
     updateDisplay();
-
-    intervalId = setInterval(() => {
-        remainingSeconds--;
-        updateDisplay();
-
-        if (remainingSeconds < 0) {
-            // タイマー終了時の処理
-            playBeep();
-            nextTimer();
-        }
-    }, 1000);
+    intervalId = setInterval(tick, 1000);
 });
-
-// 次のタイマーへ
-function nextTimer() {
-    clearInterval(intervalId);
-    currentTimerIndex++;
-
-    if (currentTimerIndex < timers.length) {
-        // 次のタイマーがある場合
-        remainingSeconds = timers[currentTimerIndex].totalSeconds;
-        statusText.innerText = `タイマー ${currentTimerIndex + 1} 実行中`;
-        renderList();
-        
-        // 即座に次を開始
-        intervalId = setInterval(() => {
-            remainingSeconds--;
-            updateDisplay();
-            if (remainingSeconds < 0) {
-                playBeep();
-                nextTimer();
-            }
-        }, 1000);
-    } else {
-        // 全て終了
-        finishAll();
-    }
-}
-
-function updateDisplay() {
-    if (remainingSeconds < 0) remainingSeconds = 0;
-    mainDisplay.innerText = formatTime(remainingSeconds);
-}
 
 function finishAll() {
     isRunning = false;
@@ -134,12 +124,10 @@ function finishAll() {
     startBtn.disabled = false;
     addBtn.disabled = false;
     startBtn.innerText = "再スタート";
-    
-    // リセットのためにインデックスを戻す場合はここで制御
-    // currentTimerIndex = 0; 
+    currentTimerIndex = 0; // 次回のためにリセット
+    remainingSeconds = 0;
 }
 
-// リセットボタン
 resetBtn.addEventListener('click', () => {
     clearInterval(intervalId);
     isRunning = false;
