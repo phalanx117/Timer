@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequential Timer PWA</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <h1>Sequence Timer</h1>
+        
+        <div class="input-area">
+            <input type="number" id="input-min" placeholder="分" min="0" value="0">
+            <span>:</span>
+            <input type="number" id="input-sec" placeholder="秒" min="0" max="59" value="10">
+            <button id="add-btn">追加</button>
+        </div>
+
+        <div id="timer-list" class="timer-list">
+            </div>
+
+        <div class="current-display">
+            <h2 id="main-display">00:00</h2>
+            <p id="status-text">待機中</p>
+        </div>
+
+        <div class="controls">
+            <button id="start-btn">スタート</button>
+            <button id="reset-btn">リセット</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Service Workerの登録
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
