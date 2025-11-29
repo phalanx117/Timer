@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seq-timer-v1';
+const CACHE_NAME = 'seq-timer-v2';
 const urlsToCache = [
     './',
     './index.html',
@@ -19,4 +19,5 @@ self.addEventListener('fetch', event => {
         caches.match(event.request)
             .then(response => response || fetch(event.request))
     );
+
 });
