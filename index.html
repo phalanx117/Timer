@@ -2,39 +2,48 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sequential Timer PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SeqTimer</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="container">
-        <h1>Sequence Timer</h1>
+    <div class="app-container">
         
-        <div class="input-area">
-            <input type="number" id="input-min" placeholder="分" min="0" value="0">
-            <span>:</span>
-            <input type="number" id="input-sec" placeholder="秒" min="0" max="59" value="10">
-            <button id="add-btn">追加</button>
+        <div class="list-area">
+            <h3>Timers Queue</h3>
+            <div id="timer-list" class="timer-list">
+                <div class="empty-state">設定を追加してください</div>
+            </div>
         </div>
 
-        <div id="timer-list" class="timer-list">
+        <div class="display-area">
+            <p id="status-text">Ready</p>
+            <h1 id="main-display">00:00</h1>
+        </div>
+
+        <div class="control-panel">
+            <div class="input-group">
+                <div class="time-inputs">
+                    <input type="number" id="input-min" placeholder="0" min="0" value="0">
+                    <span class="colon">m</span>
+                    <input type="number" id="input-sec" placeholder="0" min="0" max="59" value="10">
+                    <span class="colon">s</span>
+                </div>
+                <button id="add-btn" class="btn-circle-small">+</button>
             </div>
 
-        <div class="current-display">
-            <h2 id="main-display">00:00</h2>
-            <p id="status-text">待機中</p>
-        </div>
-
-        <div class="controls">
-            <button id="start-btn">スタート</button>
-            <button id="reset-btn">リセット</button>
+            <div class="main-controls">
+                <button id="reset-btn" class="btn-secondary">reset</button>
+                <button id="start-btn" class="btn-primary">start</button>
+            </div>
+            
+            <button id="repeat-step-btn" class="btn-warning" disabled>↺</button>
         </div>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Service Workerの登録
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
