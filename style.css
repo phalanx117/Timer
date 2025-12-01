@@ -1,74 +1,216 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-main: #ffffff;
+    --text-sub: #aaaaaa;
+    --accent-blue: #2979ff;
+    --accent-orange: #ff9100;
+    --accent-red: #ff1744;
+    --input-bg: #2c2c2c;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* タップ時のハイライトを消す */
+}
+
 body {
-    font-family: sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden; /* 全体スクロール禁止 */
 }
 
-.container {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.input-area {
+.app-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column;
+    height: 100%;
+    padding: 16px;
+}
+
+/* --- 上部：リストエリア --- */
+.list-area {
+    flex: 1; /* 余ったスペースを全部使う */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     margin-bottom: 20px;
 }
 
-input {
-    width: 50px;
-    padding: 8px;
-    font-size: 16px;
-    text-align: center;
-}
-
-button {
-    padding: 8px 16px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-button:disabled {
-    background-color: #ccc;
+.list-area h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .timer-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    margin-bottom: 20px;
-    text-align: left;
+    flex: 1;
+    overflow-y: auto; /* ここだけスクロールさせる */
+    padding-right: 5px;
 }
 
 .timer-item {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    background-color: var(--card-bg);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
+    font-size: 16px;
+    border-left: 4px solid transparent;
 }
 
 .timer-item.active {
-    background-color: #e3f2fd;
+    background-color: #1a237e; /* 実行中の背景色 */
+    border-left: 4px solid var(--accent-blue);
     font-weight: bold;
-    color: #007bff;
+    color: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(41, 121, 255, 0.3);
 }
 
-.current-display h2 {
-    font-size: 3em;
-    margin: 10px 0;
+.empty-state {
+    color: var(--text-sub);
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* --- 中央：メイン表示 --- */
+.display-area {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#status-text {
+    color: var(--accent-blue);
+    margin: 0;
+    font-size: 16px;
+    height: 20px;
+}
+
+#main-display {
+    font-size: 80px; /* 超巨大文字 */
+    margin: 0;
+    font-variant-numeric: tabular-nums; /* 数字の幅を等しくする */
+    line-height: 1;
+    font-weight: 300;
+}
+
+/* --- 下部：操作パネル --- */
+.control-panel {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    margin: 0 -16px -16px -16px; /* 画面端まで広げる */
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+}
+
+/* 入力エリア */
+.input-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--input-bg);
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+input[type="number"] {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 24px;
+    width: 50px;
+    text-align: right;
+    border-bottom: 2px solid var(--text-sub);
+}
+input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-blue);
+}
+
+.colon {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin-right: 5px;
+}
+
+/* ボタン共通 */
+button {
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s;
+}
+button:active {
+    transform: scale(0.95);
+}
+button:disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.btn-circle-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* メイン操作ボタン */
+.main-controls {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* リセット1 : スタート2 の比率 */
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: white;
+    height: 60px;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 2px solid var(--accent-red);
+    color: var(--accent-red);
+    height: 60px;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.btn-warning {
+    width: 100%;
+    background-color: var(--card-bg); /* 背景と同化させてボーダーを目立たせる */
+    border: 2px dashed var(--accent-orange);
+    color: var(--accent-orange);
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.btn-warning:not(:disabled) {
+    background-color: rgba(255, 145, 0, 0.1);
 }
