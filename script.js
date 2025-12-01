@@ -12,8 +12,8 @@ const mainDisplay = document.getElementById('main-display');
 const statusText = document.getElementById('status-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
+const repeatStepBtn = document.getElementById('repeat-step-btn'); // ID変更
 
-// 音声再生 (エラー対策付き)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playBeep() {
@@ -27,7 +27,7 @@ function playBeep() {
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.5);
     } catch (e) {
-        console.log("音の再生に失敗しましたが続行します", e);
+        console.log("音の再生エラー", e);
     }
 }
 
@@ -38,24 +38,48 @@ function formatTime(totalSec) {
     return `${m}:${s}`;
 }
 
+// 追加ボタン（通常）
 addBtn.addEventListener('click', () => {
     const m = parseInt(minInput.value) || 0;
     const s = parseInt(secInput.value) || 0;
     const total = m * 60 + s;
     if (total <= 0) return;
-    timers.push({ totalSeconds: total, originalTotal: total });
+    
+    // 通常追加時は label は null
+    timers.push({ 
+        totalSeconds: total, 
+        originalTotal: total,
+        label: null 
+    });
     renderList();
 });
 
 function renderList() {
     timerList.innerHTML = '';
+    
+    // 表示用の通し番号カウンタ
+    let displayCount = 1;
+
     timers.forEach((timer, index) => {
         const div = document.createElement('div');
         div.className = 'timer-item';
+        
         if (index === currentTimerIndex && isRunning) {
             div.classList.add('active');
         }
-        div.innerHTML = `<span>#${index + 1}</span><span>${formatTime(timer.originalTotal)}</span>`;
+
+        // ラベルの決定ロジック
+        let nameText = "";
+        if (timer.label) {
+            // 「追加」などの特別なラベルがある場合
+            nameText = timer.label;
+        } else {
+            // 通常の連番
+            nameText = `#${displayCount}`;
+            displayCount++;
+        }
+
+        div.innerHTML = `<span>${nameText}</span><span>${formatTime(timer.originalTotal)}</span>`;
         timerList.appendChild(div);
     });
 }
@@ -64,17 +88,13 @@ function updateDisplay() {
     mainDisplay.innerText = formatTime(remainingSeconds);
 }
 
-// 共通のカウントダウン処理
 function tick() {
     remainingSeconds--;
     updateDisplay();
 
-    // 0秒になったら終了処理（ここが修正ポイント：<0でなく0で判定して即次へ行くか調整）
     if (remainingSeconds < 0) {
         clearInterval(intervalId);
         playBeep();
-        
-        // 次のタイマーへ
         currentTimerIndex++;
         startNextTimer();
     }
@@ -82,31 +102,30 @@ function tick() {
 
 function startNextTimer() {
     if (currentTimerIndex < timers.length) {
-        // 次がある場合
         remainingSeconds = timers[currentTimerIndex].totalSeconds;
-        statusText.innerText = `タイマー ${currentTimerIndex + 1} 実行中`;
+        
+        // ステータス表示の更新
+        const currentTimer = timers[currentTimerIndex];
+        const statusLabel = currentTimer.label ? currentTimer.label : `タイマー ${currentTimerIndex + 1}`;
+        statusText.innerText = `${statusLabel} 実行中`;
+        
         renderList();
         updateDisplay();
-        
-        // 1秒後に減り始める
         intervalId = setInterval(tick, 1000);
     } else {
-        // 全て完了
         finishAll();
     }
 }
 
 startBtn.addEventListener('click', () => {
     if (timers.length === 0 || isRunning) return;
-    
-    // 音声コンテキストの再開
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
     isRunning = true;
     startBtn.disabled = true;
     addBtn.disabled = true;
+    repeatStepBtn.disabled = false; // 有効化
 
-    // もし最初のスタートなら初期値をセット
     if (remainingSeconds === 0 && currentTimerIndex === 0) {
         remainingSeconds = timers[0].totalSeconds;
         statusText.innerText = `タイマー 1 実行中`;
@@ -117,14 +136,46 @@ startBtn.addEventListener('click', () => {
     intervalId = setInterval(tick, 1000);
 });
 
+// 【変更】「もう1回追加」ボタンの処理
+repeatStepBtn.addEventListener('click', () => {
+    if (!isRunning || timers.length === 0) return;
+    
+    const currentTimer = timers[currentTimerIndex];
+    
+    // 表示名の決定：既にラベルがあればそれを使う、なければ今の番号
+    let baseName = currentTimer.label;
+    if (!baseName) {
+        // 現在のリスト上の見た目の番号を探す（ちょっと簡易的な計算）
+        // 厳密な計算より「今のやつの追加」とわかればいいので
+        baseName = `#${currentTimerIndex + 1}`;
+    }
+
+    // 新しいタイマーオブジェクトを作成（コピー）
+    const newTimer = {
+        totalSeconds: currentTimer.originalTotal,
+        originalTotal: currentTimer.originalTotal,
+        label: baseName + "(再)" // ここで「(再)」をつける
+    };
+
+    // 配列の「現在の次の位置」に挿入する (splice)
+    timers.splice(currentTimerIndex + 1, 0, newTimer);
+    
+    // リストを再描画してユーザーに見せる
+    renderList();
+    
+    // ボタンを押した感触（コンソールログなど。スマホだと見えないですが）
+    console.log("追加しました");
+});
+
 function finishAll() {
     isRunning = false;
     clearInterval(intervalId);
     statusText.innerText = "全て完了しました";
     startBtn.disabled = false;
     addBtn.disabled = false;
+    repeatStepBtn.disabled = true;
     startBtn.innerText = "再スタート";
-    currentTimerIndex = 0; // 次回のためにリセット
+    currentTimerIndex = 0;
     remainingSeconds = 0;
 }
 
@@ -139,5 +190,6 @@ resetBtn.addEventListener('click', () => {
     statusText.innerText = "待機中";
     startBtn.disabled = false;
     addBtn.disabled = false;
+    repeatStepBtn.disabled = true;
     startBtn.innerText = "スタート";
 });
