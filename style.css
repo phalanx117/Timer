@@ -7,58 +7,35 @@
     --accent-orange: #ff9100;
     --accent-red: #ff1744;
     --input-bg: #2c2c2c;
+    /* 操作パネルの高さ目安 */
+    --panel-height: 240px; 
 }
 
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
-    /* 重要: アドレスバー分を計算した高さにする */
-    height: 50dvh;
-    width: 100%;
-    position: fixed; /* 画面全体がスクロールしてしまうのを防ぐ */
-    overflow: hidden;
+    height: 100vh;
+    overflow: hidden; /* 全体のスクロールは禁止 */
 }
 
+/* --- 上部：スクロールするエリア --- */
 .app-container {
-    display: flex;
-    flex-direction: column;
     height: 100%;
-    padding: 16px 16px 0 16px; /* 下のpaddingはゼロにしてパネルに任せる */
-}
-
-/* --- 上部：リストエリア --- */
-.list-area {
-    flex: 1; 
-    /* 重要: フレックスアイテムが親からはみ出すのを防ぐ魔法の記述 */
-    min-height: 0; 
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
+    overflow-y: auto; /* ここだけスクロールさせる */
+    padding: 16px;
+    /* 重要：下に固定パネル分の余白を作る */
+    padding-bottom: calc(var(--panel-height) + 20px); 
+    -webkit-overflow-scrolling: touch; /* スクロールを滑らかに */
 }
 
 .list-area h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
     color: var(--text-sub);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    flex-shrink: 0; /* タイトルは縮ませない */
-}
-
-.timer-list {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 5px;
-    /* スクロールバーのデザイン（Chrome用） */
-    scrollbar-width: thin;
-    scrollbar-color: var(--card-bg) transparent;
+    font-size: 14px;
+    margin: 0 0 10px 0;
 }
 
 .timer-item {
@@ -69,167 +46,75 @@ body {
     display: flex;
     justify-content: space-between;
     font-size: 16px;
-    border-left: 4px solid transparent;
 }
-
 .timer-item.active {
     background-color: #1a237e;
     border-left: 4px solid var(--accent-blue);
-    font-weight: bold;
     color: var(--accent-blue);
+    font-weight: bold;
 }
 
-.empty-state {
-    color: var(--text-sub);
-    font-size: 14px;
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* --- 中央：メイン表示 --- */
 .display-area {
     text-align: center;
-    margin-bottom: 15px; /* 下の間隔を少し詰める */
-    flex-shrink: 0; /* 画面が狭くなってもここは潰さない */
-    padding: 10px 0;
+    margin: 20px 0;
 }
-
-#status-text {
-    color: var(--accent-blue);
-    margin: 0;
-    font-size: 16px;
-    height: 20px;
-}
-
 #main-display {
-    font-size: 72px; /* 少しだけ小さくして画面に収まりやすくする */
-    margin: 5px 0 0 0;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
+    font-size: 72px;
+    margin: 0;
     font-weight: 300;
+    line-height: 1;
 }
+#status-text { color: var(--accent-blue); margin: 0; }
 
-/* --- 下部：操作パネル --- */
+/* --- 下部：画面に貼り付ける操作パネル --- */
 .control-panel {
+    position: fixed; /* ★重要：画面に対する絶対位置固定 */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--panel-height);
     background-color: var(--card-bg);
-    padding: 20px 20px 30px 20px; /* 下に少し余裕を持たせる（iPhoneのバー対策） */
+    padding: 20px;
     border-radius: 20px 20px 0 0;
-    margin: 0 -16px 0 -16px;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-    flex-shrink: 0; /* 絶対に隠れないようにする */
+    z-index: 1000; /* 最前面に持ってくる */
     
-    /* iPhone X以降の下部バー（セーフエリア）対応 */
-    padding-bottom: max(20px, env(safe-area-inset-bottom)); 
+    /* iPhoneの下部バー対応 */
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* 入力エリア */
+/* 中身のレイアウト */
 .input-group {
     display: flex;
-    align-items: center;
     justify-content: space-between;
     background: var(--input-bg);
-    padding: 8px 15px; /* 少しスリムに */
+    padding: 8px 15px;
     border-radius: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
-
-.time-inputs {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-}
-
+.time-inputs { display: flex; align-items: baseline; gap: 5px; }
 input[type="number"] {
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-size: 24px;
-    width: 50px;
-    text-align: right;
-    border-bottom: 2px solid var(--text-sub);
-    border-radius: 0; /* iOSの角丸解除 */
+    background: transparent; border: none; color: white;
+    font-size: 24px; width: 50px; text-align: right;
+    border-bottom: 1px solid #555;
 }
-input:focus {
-    outline: none;
-    border-bottom-color: var(--accent-blue);
-}
-
-.colon {
-    font-size: 14px;
-    color: var(--text-sub);
-    margin-right: 5px;
-}
-
-/* ボタン共通 */
-button {
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: transform 0.1s;
-    user-select: none; /* 長押し選択防止 */
-}
-button:active {
-    transform: scale(0.95);
-}
-button:disabled {
-    opacity: 0.3;
-    pointer-events: none;
-}
-
 .btn-circle-small {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: var(--accent-blue);
-    color: white;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-blue); color: white;
+    font-size: 24px; display: flex; align-items: center; justify-content: center;
 }
-
-/* メイン操作ボタン */
 .main-controls {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 12px;
-    margin-bottom: 12px;
+    display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;
 }
-
 .btn-primary {
-    background-color: var(--accent-blue);
-    color: white;
-    height: 56px;
-    border-radius: 12px;
-    font-size: 18px;
+    background: var(--accent-blue); color: white; height: 50px; border-radius: 12px; font-size: 18px;
 }
-
 .btn-secondary {
-    background-color: transparent;
-    border: 2px solid var(--accent-red);
-    color: var(--accent-red);
-    height: 56px;
-    border-radius: 12px;
-    font-size: 16px;
+    background: transparent; border: 2px solid var(--accent-red); color: var(--accent-red);
+    height: 50px; border-radius: 12px;
 }
-
 .btn-warning {
-    width: 100%;
-    background-color: transparent;
-    border: 2px dashed var(--accent-orange);
-    color: var(--accent-orange);
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    width: 100%; background: rgba(255,145,0,0.1);
+    border: 2px dashed var(--accent-orange); color: var(--accent-orange);
+    padding: 10px; border-radius: 12px;
 }
-.btn-warning:not(:disabled) {
-    background-color: rgba(255, 145, 0, 0.1);
-}
-
-
-
