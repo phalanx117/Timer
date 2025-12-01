@@ -20,7 +20,7 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     /* 重要: アドレスバー分を計算した高さにする */
-    height: 80dvh;
+    height: 50dvh;
     width: 100%;
     position: fixed; /* 画面全体がスクロールしてしまうのを防ぐ */
     overflow: hidden;
@@ -230,5 +230,6 @@ button:disabled {
 .btn-warning:not(:disabled) {
     background-color: rgba(255, 145, 0, 0.1);
 }
+
 
 
