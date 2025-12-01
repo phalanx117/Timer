@@ -11,7 +11,7 @@
 
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent; /* タップ時のハイライトを消す */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -19,24 +19,28 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
-    height: 100vh;
-    overflow: hidden; /* 全体スクロール禁止 */
+    /* 重要: アドレスバー分を計算した高さにする */
+    height: 100dvh;
+    width: 100%;
+    position: fixed; /* 画面全体がスクロールしてしまうのを防ぐ */
+    overflow: hidden;
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 16px;
+    padding: 16px 16px 0 16px; /* 下のpaddingはゼロにしてパネルに任せる */
 }
 
 /* --- 上部：リストエリア --- */
 .list-area {
-    flex: 1; /* 余ったスペースを全部使う */
+    flex: 1; 
+    /* 重要: フレックスアイテムが親からはみ出すのを防ぐ魔法の記述 */
+    min-height: 0; 
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .list-area h3 {
@@ -45,12 +49,16 @@ body {
     color: var(--text-sub);
     text-transform: uppercase;
     letter-spacing: 1px;
+    flex-shrink: 0; /* タイトルは縮ませない */
 }
 
 .timer-list {
     flex: 1;
-    overflow-y: auto; /* ここだけスクロールさせる */
+    overflow-y: auto;
     padding-right: 5px;
+    /* スクロールバーのデザイン（Chrome用） */
+    scrollbar-width: thin;
+    scrollbar-color: var(--card-bg) transparent;
 }
 
 .timer-item {
@@ -65,11 +73,10 @@ body {
 }
 
 .timer-item.active {
-    background-color: #1a237e; /* 実行中の背景色 */
+    background-color: #1a237e;
     border-left: 4px solid var(--accent-blue);
     font-weight: bold;
     color: var(--accent-blue);
-    box-shadow: 0 2px 8px rgba(41, 121, 255, 0.3);
 }
 
 .empty-state {
@@ -82,7 +89,9 @@ body {
 /* --- 中央：メイン表示 --- */
 .display-area {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px; /* 下の間隔を少し詰める */
+    flex-shrink: 0; /* 画面が狭くなってもここは潰さない */
+    padding: 10px 0;
 }
 
 #status-text {
@@ -93,9 +102,9 @@ body {
 }
 
 #main-display {
-    font-size: 80px; /* 超巨大文字 */
-    margin: 0;
-    font-variant-numeric: tabular-nums; /* 数字の幅を等しくする */
+    font-size: 72px; /* 少しだけ小さくして画面に収まりやすくする */
+    margin: 5px 0 0 0;
+    font-variant-numeric: tabular-nums;
     line-height: 1;
     font-weight: 300;
 }
@@ -103,10 +112,14 @@ body {
 /* --- 下部：操作パネル --- */
 .control-panel {
     background-color: var(--card-bg);
-    padding: 20px;
+    padding: 20px 20px 30px 20px; /* 下に少し余裕を持たせる（iPhoneのバー対策） */
     border-radius: 20px 20px 0 0;
-    margin: 0 -16px -16px -16px; /* 画面端まで広げる */
+    margin: 0 -16px 0 -16px;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    flex-shrink: 0; /* 絶対に隠れないようにする */
+    
+    /* iPhone X以降の下部バー（セーフエリア）対応 */
+    padding-bottom: max(20px, env(safe-area-inset-bottom)); 
 }
 
 /* 入力エリア */
@@ -115,9 +128,9 @@ body {
     align-items: center;
     justify-content: space-between;
     background: var(--input-bg);
-    padding: 10px 15px;
+    padding: 8px 15px; /* 少しスリムに */
     border-radius: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .time-inputs {
@@ -134,6 +147,7 @@ input[type="number"] {
     width: 50px;
     text-align: right;
     border-bottom: 2px solid var(--text-sub);
+    border-radius: 0; /* iOSの角丸解除 */
 }
 input:focus {
     outline: none;
@@ -152,6 +166,7 @@ button {
     cursor: pointer;
     font-weight: bold;
     transition: transform 0.1s;
+    user-select: none; /* 長押し選択防止 */
 }
 button:active {
     transform: scale(0.95);
@@ -162,8 +177,8 @@ button:disabled {
 }
 
 .btn-circle-small {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background-color: var(--accent-blue);
     color: white;
@@ -171,39 +186,40 @@ button:disabled {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
 }
 
 /* メイン操作ボタン */
 .main-controls {
     display: grid;
-    grid-template-columns: 1fr 2fr; /* リセット1 : スタート2 の比率 */
-    gap: 15px;
-    margin-bottom: 15px;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .btn-primary {
     background-color: var(--accent-blue);
     color: white;
-    height: 60px;
+    height: 56px;
     border-radius: 12px;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .btn-secondary {
     background-color: transparent;
     border: 2px solid var(--accent-red);
     color: var(--accent-red);
-    height: 60px;
+    height: 56px;
     border-radius: 12px;
     font-size: 16px;
 }
 
 .btn-warning {
     width: 100%;
-    background-color: var(--card-bg); /* 背景と同化させてボーダーを目立たせる */
+    background-color: transparent;
     border: 2px dashed var(--accent-orange);
     color: var(--accent-orange);
-    padding: 15px;
+    padding: 14px;
     border-radius: 12px;
     font-size: 16px;
     display: flex;
