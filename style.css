@@ -7,8 +7,7 @@
     --accent-orange: #ff9100;
     --accent-red: #ff1744;
     --input-bg: #2c2c2c;
-    /* 操作パネルの高さ目安 */
-    --panel-height: 200px; 
+    --panel-height: 240px; 
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -18,24 +17,44 @@ body {
     font-family: sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
-    height: 100vh;
-    overflow: hidden; /* 全体のスクロールは禁止 */
+    height: 100dvh; /* dvhを使用してスマホのバー対策 */
+    overflow: hidden;
+    width: 100%;
 }
 
-/* --- 上部：スクロールするエリア --- */
+/* 全体のコンテナ（リセット） */
 .app-container {
+    width: 100%;
     height: 100%;
-    overflow-y: auto; /* ここだけスクロールさせる */
+}
+
+/* --- 上部：リストエリア（修正：ここを固定配置にする） --- */
+.list-area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* 画面の上半分(45%)を使う */
+    height: 45vh; 
+    overflow-y: auto; /* スクロール許可 */
     padding: 16px;
-    /* 重要：下に固定パネル分の余白を作る */
-    padding-bottom: calc(var(--panel-height) + 20px); 
-    -webkit-overflow-scrolling: touch; /* スクロールを滑らかに */
+    -webkit-overflow-scrolling: touch;
+    
+    /* 下端を少しぼかす */
+    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    z-index: 5;
 }
 
 .list-area h3 {
     color: var(--text-sub);
     font-size: 14px;
     margin: 0 0 10px 0;
+}
+
+.timer-list {
+    /* リストエリアの中でリストが伸びるように */
+    padding-bottom: 20px;
 }
 
 .timer-item {
@@ -54,21 +73,36 @@ body {
     font-weight: bold;
 }
 
+/* --- 中央：メイン表示（位置を固定） --- */
 .display-area {
+    position: fixed;
+    /* 画面中央より少し下 */
+    top: 55%; 
+    left: 50%;
+    transform: translate(-50%, -50%); /* ど真ん中に配置 */
+    width: 100%;
     text-align: center;
-    margin: 20px 0;
+    z-index: 10;
 }
+
 #main-display {
-    font-size: 72px;
+    font-size: 80px;
     margin: 0;
     font-weight: 300;
     line-height: 1;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
-#status-text { color: var(--accent-blue); margin: 0; }
+#status-text { 
+    color: var(--accent-blue); 
+    margin-bottom: 5px; 
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
 
-/* --- 下部：画面に貼り付ける操作パネル --- */
+/* --- 下部：操作パネル --- */
 .control-panel {
-    position: fixed; /* ★重要：画面に対する絶対位置固定 */
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -77,13 +111,12 @@ body {
     padding: 20px;
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-    z-index: 1000; /* 最前面に持ってくる */
+    z-index: 1000;
     
     /* iPhoneの下部バー対応 */
     padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* 中身のレイアウト */
 .input-group {
     display: flex;
     justify-content: space-between;
@@ -118,7 +151,3 @@ input[type="number"] {
     border: 2px dashed var(--accent-orange); color: var(--accent-orange);
     padding: 10px; border-radius: 12px;
 }
-
-
-
-
