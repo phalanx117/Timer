@@ -8,7 +8,7 @@
     --accent-red: #ff1744;
     --input-bg: #2c2c2c;
     /* 操作パネルの高さ目安 */
-    --panel-height: 160px; 
+    --panel-height: 200px; 
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -118,6 +118,7 @@ input[type="number"] {
     border: 2px dashed var(--accent-orange); color: var(--accent-orange);
     padding: 10px; border-radius: 12px;
 }
+
 
 
 
