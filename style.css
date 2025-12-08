@@ -116,8 +116,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px; /* ボタンとの間隔を空ける */
+    gap: auto;
+    margin-bottom: 32px; /* ボタンとの間隔を空ける */
+    
 }
 
 .time-inputs { 
