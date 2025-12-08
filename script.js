@@ -128,7 +128,7 @@ startBtn.addEventListener('click', () => {
 
     if (remainingSeconds === 0 && currentTimerIndex === 0) {
         remainingSeconds = timers[0].totalSeconds;
-        statusText.innerText = `タイマー 1 実行中`;
+        statusText.innerText = `#1 実行中`;
     }
     
     renderList();
@@ -193,3 +193,4 @@ resetBtn.addEventListener('click', () => {
     repeatStepBtn.disabled = true;
     startBtn.innerText = "スタート";
 });
+
