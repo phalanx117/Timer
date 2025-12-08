@@ -68,7 +68,7 @@ body {
 .display-area {
     position: fixed;
     /* 画面の40%の位置（少し上にずらした） */
-    top: 40%; 
+    top: 30%; 
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
@@ -97,7 +97,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: auto; /* ★重要：中身に合わせて伸びるように変更 */
+    height: 50%; /* ★重要：中身に合わせて伸びるように変更 */
     background-color: var(--card-bg);
     
     /* 上の角を丸く */
@@ -133,10 +133,10 @@ input[type="number"] {
     background: transparent; 
     border: none; 
     color: white;
-    font-size: 32px; /* 入力文字も巨大に */
-    width: 60px; 
+    font-size: 50px; /* 入力文字も巨大に */
+    width: 100px; 
     text-align: center;
-    font-weight: bold;
+    font-weight: 200;
     padding: 0;
     margin: 0;
     border-radius: 0;
@@ -150,13 +150,13 @@ input:focus { outline: none; }
     width: 56px; 
     height: 56px; 
     border-radius: 50%;
-    background: var(--accent-blue); 
-    color: white;
-    font-size: 32px; 
+    background: rgba(6, 48, 6, 0.716); 
+    color: rgba(8, 184, 128, 0.818);
+    font-size: 64px; 
     display: flex; 
     align-items: center; 
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.4);
+    font-weight: 200;
 }
 
 /* メインボタンエリア */
@@ -167,23 +167,23 @@ input:focus { outline: none; }
     margin-bottom: 16px;
 }
 
-.btn-primary {
-    background: var(--accent-blue); 
-    color: white; 
+.btn-start {
+    background: rgba(4, 39, 135, 0.462); 
+    color: hwb(218 56% 0% / 0.89); 
     height: 72px; /* ★高さをガッツリ増やす */
     border-radius: 18px; 
-    font-size: 22px;
-    font-weight: bold;
+    font-size: 44px;
+    font-weight: 200;
 }
 
-.btn-secondary {
+.btn-reset {
     background: rgba(255, 69, 58, 0.15); /* 赤色の薄い背景 */
     border: none;
     color: var(--accent-red);
     height: 72px; /* ★高さを合わせる */
     border-radius: 18px;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 36px;
+    font-weight: 200;
 }
 
 /* 割り込み追加ボタン */
@@ -194,8 +194,8 @@ input:focus { outline: none; }
     color: var(--accent-orange);
     padding: 18px; 
     border-radius: 18px;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 36px;
+    font-weight: 200;
     display: flex;
     align-items: center;
     justify-content: center;
