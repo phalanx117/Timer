@@ -1,12 +1,14 @@
 :root {
-    --bg-color: #000000; /* 完全な黒に変更（有機EL省電力） */
-    --card-bg: #1c1c1e; /* iOSっぽいダークグレー */
+    --bg-color: #000000;
+    --card-bg: #1c1c1e; 
     --text-main: #ffffff;
     --text-sub: #8e8e93;
     --accent-blue: #0a84ff;
     --accent-orange: #ff9f0a;
+    --accent-green: #30d158; /* 緑色を定義 */
     --accent-red: #ff453a;
     --input-bg: #2c2c2e;
+    --btn-bg: #3a3a3c;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,24 +21,25 @@ body {
     height: 100dvh;
     width: 100%;
     overflow: hidden;
+    user-select: none;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
 }
 
 /* --- 上部：リストエリア --- */
 .list-area {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* 高さを35%に抑えて、下のスペースを確保 */
-    height: 35vh; 
+    flex: 1; 
     overflow-y: auto;
-    padding: 16px 16px 40px 16px; /* 下に少し余白 */
+    padding: 16px 16px 0 16px; 
     -webkit-overflow-scrolling: touch;
     z-index: 5;
-    
-    /* 下の方をフェードアウトさせる */
-    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
 }
 
 .list-area h3 {
@@ -45,163 +48,180 @@ body {
     margin: 0 0 12px 0;
     font-weight: 600;
     letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    background: var(--bg-color);
+    padding-bottom: 8px;
+    z-index: 2;
 }
 
 .timer-item {
     background-color: var(--card-bg);
-    padding: 16px; /* 少し広く */
-    margin-bottom: 10px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
     border-radius: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 18px; /* 文字も大きく */
+    font-size: 16px;
     font-weight: 500;
 }
 .timer-item.active {
-    background-color: rgba(10, 132, 255, 0.15); /* 青っぽく光らせる */
+    background-color: rgba(10, 132, 255, 0.15);
     border: 1px solid var(--accent-blue);
     color: var(--accent-blue);
 }
 
 /* --- 中央：タイマー表示 --- */
 .display-area {
-    position: fixed;
-    /* 画面の40%の位置（少し上にずらした） */
-    top: 30%; 
-    left: 50%;
-    transform: translate(-50%, -50%);
+    flex: 0 0 auto;
     width: 100%;
     text-align: center;
+    padding: 20px 0;
     z-index: 10;
-    pointer-events: none; /* 下の要素を触れるように念のため */
 }
 
 #main-display {
-    font-size: 84px; /* さらに巨大化 */
+    font-size: 72px;
     margin: 0;
-    font-weight: 200; /* 細くスタイリッシュに */
-    font-feature-settings: "tnum"; /* 数字の幅を等しく */
+    line-height: 1;
+    font-weight: 200;
+    font-feature-settings: "tnum";
     letter-spacing: -2px;
 }
 #status-text { 
     color: var(--accent-blue); 
-    margin-bottom: 8px; 
+    margin-bottom: 4px; 
     font-size: 16px;
     font-weight: 600;
+    height: 20px;
 }
 
-/* --- 下部：操作パネル（高さ自動調整） --- */
+/* --- 下部：操作パネル --- */
 .control-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50%; /* ★重要：中身に合わせて伸びるように変更 */
+    flex: 0 0 auto;
     background-color: var(--card-bg);
-    
-    /* 上の角を丸く */
     border-radius: 24px 24px 0 0;
-    
-    /* 内側の余白（下はスマホのバー用に大きく取る） */
-    padding: 24px 20px;
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
-    
+    padding: 20px 16px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
     box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
     z-index: 1000;
-}
-
-/* 入力欄 */
-.input-group {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 入力表示エリア */
+.input-display-area {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: auto;
-    margin-bottom: 32px; /* ボタンとの間隔を空ける */
-    
-}
-
-.time-inputs { 
-    display: flex; 
-    align-items: baseline; 
-    gap: 8px; 
     background: var(--input-bg);
-    padding: 8px 20px;
+    padding: 4px 8px 4px 24px;
     border-radius: 16px;
+    height: 60px; /* 高さを少し固定気味に */
 }
 
-input[type="number"] {
-    background: transparent; 
-    border: none; 
-    color: white;
-    font-size: 50px; /* 入力文字も巨大に */
-    width: 100px; 
-    text-align: center;
+.time-readout {
+    font-size: 40px;
     font-weight: 200;
-    padding: 0;
-    margin: 0;
-    border-radius: 0;
+    font-feature-settings: "tnum";
+    color: var(--text-main);
 }
-input:focus { outline: none; }
+.time-readout .unit {
+    font-size: 16px;
+    color: var(--text-sub);
+    margin-right: 8px;
+}
 
-.colon { font-size: 16px; color: var(--text-sub); }
+/* 右側のボタン群 */
+.action-buttons-row {
+    display: flex;
+    gap: 12px;
+}
 
-/* 追加ボタン（＋） */
-.btn-circle-small {
-    width: 56px; 
-    height: 56px; 
+/* 丸いボタン共通スタイル */
+.btn-circle {
+    width: 44px; 
+    height: 44px; 
     border-radius: 50%;
-    background: rgba(6, 48, 6, 0.716); 
-    color: rgba(8, 184, 128, 0.818);
-    font-size: 64px; 
+    border: none;
     display: flex; 
     align-items: center; 
     justify-content: center;
-    font-weight: 200;
+    font-weight: 300;
+    font-size: 28px;
+    transition: opacity 0.2s;
+}
+.btn-circle:disabled {
+    opacity: 0.3; /* 無効時は薄く */
+}
+
+/* 緑ボタン（追加） */
+.btn-green {
+    background: rgba(48, 209, 88, 0.2); 
+    color: var(--accent-green);
+}
+.btn-green:active { background: rgba(48, 209, 88, 0.4); }
+
+/* オレンジボタン（リピート） */
+.btn-orange {
+    background: rgba(255, 159, 10, 0.2);
+    color: var(--accent-orange);
+    font-size: 24px; /* アイコンなので少し小さく調整 */
+}
+.btn-orange:active { background: rgba(255, 159, 10, 0.4); }
+
+
+/* キーパッド */
+.numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.num-btn {
+    background: var(--btn-bg);
+    border: none;
+    color: white;
+    font-size: 22px;
+    padding: 10px 0;
+    border-radius: 8px;
+    touch-action: manipulation;
+}
+.num-btn:active {
+    background: #5a5a5e;
+}
+
+.action-del {
+    background: rgba(255, 69, 58, 0.2);
+    color: var(--accent-red);
 }
 
 /* メインボタンエリア */
 .main-controls {
     display: grid; 
-    grid-template-columns: 1fr 2fr; /* 1:2の比率 */
-    gap: 16px; 
-    margin-bottom: 16px;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px; 
 }
 
 .btn-start {
     background: rgba(4, 39, 135, 0.462); 
     color: hwb(218 56% 0% / 0.89); 
-    height: 72px; /* ★高さをガッツリ増やす */
-    border-radius: 18px; 
-    font-size: 44px;
+    height: 56px;
+    border-radius: 14px; 
+    font-size: 28px;
     font-weight: 200;
+    border: none;
 }
+.btn-start:disabled { opacity: 0.5; }
 
 .btn-reset {
-    background: rgba(255, 69, 58, 0.15); /* 赤色の薄い背景 */
+    background: rgba(255, 69, 58, 0.15);
     border: none;
     color: var(--accent-red);
-    height: 72px; /* ★高さを合わせる */
-    border-radius: 18px;
-    font-size: 36px;
+    height: 56px;
+    border-radius: 14px;
+    font-size: 20px;
     font-weight: 200;
-}
-
-/* 割り込み追加ボタン */
-.btn-warning {
-    width: 100%; 
-    background: transparent;
-    border: 2px dashed var(--accent-orange); 
-    color: var(--accent-orange);
-    padding: 18px; 
-    border-radius: 18px;
-    font-size: 36px;
-    font-weight: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-.btn-warning:active {
-    background: rgba(255, 159, 10, 0.2);
 }
