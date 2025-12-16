@@ -23,22 +23,34 @@
         </div>
 
         <div class="control-panel">
-            <div class="input-group">
-                <div class="time-inputs">
-                    <input type="number" id="input-min" placeholder="0" min="0" value="0">
-                    <span class="colon">m</span>
-                    <input type="number" id="input-sec" placeholder="0" min="0" max="59" value="10">
-                    <span class="colon">s</span>
+            <div class="input-display-area">
+                <div id="time-input-display" class="time-readout">00<span class="unit">m</span> 00<span class="unit">s</span></div>
+                
+                <div class="action-buttons-row">
+                    <button id="repeat-step-btn" class="btn-circle btn-orange" disabled>↺</button>
+                    <button id="add-btn" class="btn-circle btn-green">+</button>
                 </div>
-                <button id="add-btn" class="btn-circle-small">+</button>
+            </div>
+
+            <div class="numpad-grid">
+                <button class="num-btn" data-val="1">1</button>
+                <button class="num-btn" data-val="2">2</button>
+                <button class="num-btn" data-val="3">3</button>
+                <button class="num-btn" data-val="4">4</button>
+                <button class="num-btn" data-val="5">5</button>
+                <button class="num-btn" data-val="6">6</button>
+                <button class="num-btn" data-val="7">7</button>
+                <button class="num-btn" data-val="8">8</button>
+                <button class="num-btn" data-val="9">9</button>
+                <button class="num-btn" data-val="00">00</button>
+                <button class="num-btn" data-val="0">0</button>
+                <button class="num-btn action-del" id="del-btn">⌫</button>
             </div>
 
             <div class="main-controls">
                 <button id="reset-btn" class="btn-reset">reset</button>
                 <button id="start-btn" class="btn-start">start</button>
             </div>
-            
-            <button id="repeat-step-btn" class="btn-warning" disabled>↺</button>
         </div>
     </div>
 
@@ -50,4 +62,3 @@
     </script>
 </body>
 </html>
-
