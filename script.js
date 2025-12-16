@@ -3,17 +3,21 @@ let currentTimerIndex = 0;
 let remainingSeconds = 0;
 let intervalId = null;
 let isRunning = false;
+let inputBuffer = ""; // テンキー入力用のバッファ文字列
 
-const minInput = document.getElementById('input-min');
-const secInput = document.getElementById('input-sec');
+// DOM要素
 const addBtn = document.getElementById('add-btn');
 const timerList = document.getElementById('timer-list');
 const mainDisplay = document.getElementById('main-display');
 const statusText = document.getElementById('status-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
-const repeatStepBtn = document.getElementById('repeat-step-btn'); // ID変更
+const repeatStepBtn = document.getElementById('repeat-step-btn');
+const timeInputDisplay = document.getElementById('time-input-display');
+const numButtons = document.querySelectorAll('.num-btn');
+const delBtn = document.getElementById('del-btn');
 
+// 音声設定
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playBeep() {
@@ -38,26 +42,74 @@ function formatTime(totalSec) {
     return `${m}:${s}`;
 }
 
-// 追加ボタン（通常）
+// ----------------------------------------
+// テンキー入力ロジック
+// ----------------------------------------
+
+// 数字ボタンのイベントリスナー
+numButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // 削除ボタンの場合は別処理
+        if (btn.id === 'del-btn') {
+            inputBuffer = inputBuffer.slice(0, -1);
+            updateInputDisplay();
+            return;
+        }
+
+        const val = btn.getAttribute('data-val');
+        
+        // 4桁（MMSS）まで制限
+        if (inputBuffer.length + val.length > 4) return;
+
+        // 0の連続入力防止（空のときに0は無視、など必要なら追加）
+        if (inputBuffer === "" && val === "00") return; // 最初がいきなり00は防ぐ
+        
+        inputBuffer += val;
+        updateInputDisplay();
+    });
+});
+
+// 入力画面の表示更新 (00m 00s形式)
+function updateInputDisplay() {
+    // 右詰めでパディング
+    // 例: "1" -> 00m 01s, "12" -> 00m 12s, "123" -> 01m 23s
+    const padded = inputBuffer.padStart(4, '0');
+    const m = padded.slice(0, 2);
+    const s = padded.slice(2, 4);
+    
+    timeInputDisplay.innerHTML = `${m}<span class="unit">m</span> ${s}<span class="unit">s</span>`;
+}
+
+// ----------------------------------------
+// タイマーロジック
+// ----------------------------------------
+
+// 追加ボタン
 addBtn.addEventListener('click', () => {
-    const m = parseInt(minInput.value) || 0;
-    const s = parseInt(secInput.value) || 0;
+    if (inputBuffer.length === 0) return;
+
+    const padded = inputBuffer.padStart(4, '0');
+    const m = parseInt(padded.slice(0, 2));
+    const s = parseInt(padded.slice(2, 4));
     const total = m * 60 + s;
+
     if (total <= 0) return;
     
-    // 通常追加時は label は null
     timers.push({ 
         totalSeconds: total, 
         originalTotal: total,
         label: null 
     });
+    
+    // 入力をクリア
+    inputBuffer = "";
+    updateInputDisplay();
+    
     renderList();
 });
 
 function renderList() {
     timerList.innerHTML = '';
-    
-    // 表示用の通し番号カウンタ
     let displayCount = 1;
 
     timers.forEach((timer, index) => {
@@ -68,16 +120,8 @@ function renderList() {
             div.classList.add('active');
         }
 
-        // ラベルの決定ロジック
-        let nameText = "";
-        if (timer.label) {
-            // 「追加」などの特別なラベルがある場合
-            nameText = timer.label;
-        } else {
-            // 通常の連番
-            nameText = `#${displayCount}`;
-            displayCount++;
-        }
+        let nameText = timer.label ? timer.label : `#${displayCount}`;
+        if (!timer.label) displayCount++;
 
         div.innerHTML = `<span>${nameText}</span><span>${formatTime(timer.originalTotal)}</span>`;
         timerList.appendChild(div);
@@ -104,11 +148,10 @@ function startNextTimer() {
     if (currentTimerIndex < timers.length) {
         remainingSeconds = timers[currentTimerIndex].totalSeconds;
         
-        // ステータス表示の更新
         const currentTimer = timers[currentTimerIndex];
-        const statusLabel = currentTimer.label ? currentTimer.label : `タイマー ${currentTimerIndex + 1}`;
-        statusText.innerText = `${statusLabel} 実行中`;
-        
+        const statusLabel = currentTimer.label ? currentTimer.label : `#${currentTimerIndex + 1}`;        
+        statusText.innerText = `Running: ${statusLabel}`;
+
         renderList();
         updateDisplay();
         intervalId = setInterval(tick, 1000);
@@ -124,57 +167,52 @@ startBtn.addEventListener('click', () => {
     isRunning = true;
     startBtn.disabled = true;
     addBtn.disabled = true;
-    repeatStepBtn.disabled = false; // 有効化
+    repeatStepBtn.disabled = false;
+    
+    // キーパッドも無効化っぽく見せるならここで制御可能ですが、
+    // 誤操作防止のため操作できなくするのもありです（今回はそのまま）
 
     if (remainingSeconds === 0 && currentTimerIndex === 0) {
         remainingSeconds = timers[0].totalSeconds;
-        statusText.innerText = `#1 実行中`;
     }
+    
+    const currentTimer = timers[currentTimerIndex];
+    const statusLabel = currentTimer.label ? currentTimer.label : `#${currentTimerIndex + 1}`;
+    statusText.innerText = `Running: ${statusLabel}`;
     
     renderList();
     updateDisplay();
     intervalId = setInterval(tick, 1000);
 });
 
-// 【変更】「もう1回追加」ボタンの処理
 repeatStepBtn.addEventListener('click', () => {
     if (!isRunning || timers.length === 0) return;
     
     const currentTimer = timers[currentTimerIndex];
     
-    // 表示名の決定：既にラベルがあればそれを使う、なければ今の番号
     let baseName = currentTimer.label;
     if (!baseName) {
-        // 現在のリスト上の見た目の番号を探す（ちょっと簡易的な計算）
-        // 厳密な計算より「今のやつの追加」とわかればいいので
         baseName = `#${currentTimerIndex + 1}`;
     }
 
-    // 新しいタイマーオブジェクトを作成（コピー）
     const newTimer = {
         totalSeconds: currentTimer.originalTotal,
         originalTotal: currentTimer.originalTotal,
-        label: baseName + "(再)" // ここで「(再)」をつける
+        label: baseName + "(repeat)"
     };
 
-    // 配列の「現在の次の位置」に挿入する (splice)
     timers.splice(currentTimerIndex + 1, 0, newTimer);
-    
-    // リストを再描画してユーザーに見せる
     renderList();
-    
-    // ボタンを押した感触（コンソールログなど。スマホだと見えないですが）
-    console.log("追加しました");
 });
 
 function finishAll() {
     isRunning = false;
     clearInterval(intervalId);
-    statusText.innerText = "全て完了しました";
+    statusText.innerText = "All Done!";
     startBtn.disabled = false;
     addBtn.disabled = false;
     repeatStepBtn.disabled = true;
-    startBtn.innerText = "再スタート";
+    startBtn.innerText = "Restart";
     currentTimerIndex = 0;
     remainingSeconds = 0;
 }
@@ -185,12 +223,15 @@ resetBtn.addEventListener('click', () => {
     timers = [];
     currentTimerIndex = 0;
     remainingSeconds = 0;
+    
+    inputBuffer = ""; // 入力もリセット
+    updateInputDisplay();
+
     renderList();
     mainDisplay.innerText = "00:00";
-    statusText.innerText = "待機中";
+    statusText.innerText = "Waiting...";
     startBtn.disabled = false;
     addBtn.disabled = false;
     repeatStepBtn.disabled = true;
-    startBtn.innerText = "スタート";
+    startBtn.innerText = "Start";
 });
-
