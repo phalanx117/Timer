@@ -7,11 +7,9 @@ let inputBuffer = "";
 
 const addBtn = document.getElementById('add-btn');
 const timerList = document.getElementById('timer-list');
-const mainDisplay = document.getElementById('main-display');
-const statusText = document.getElementById('status-text');
+// mainDisplay, statusText の取得を削除
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
-// repeatStepBtn の取得は削除
 const timeInputDisplay = document.getElementById('time-input-display');
 const numButtons = document.querySelectorAll('.num-btn');
 const delBtn = document.getElementById('del-btn');
@@ -41,9 +39,8 @@ function formatTime(totalSec) {
 }
 
 // ----------------------------------------
-// テンキー入力ロジック
+// テンキー入力
 // ----------------------------------------
-
 numButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         if (btn.id === 'del-btn') {
@@ -72,40 +69,28 @@ function updateInputDisplay() {
 
 addBtn.addEventListener('click', () => {
     if (inputBuffer.length === 0) return;
-
     const m = parseInt(inputBuffer);
     const total = m * 60; 
-
     if (total <= 0) return;
     
-    timers.push({ 
-        totalSeconds: total, 
-        originalTotal: total,
-        label: null 
-    });
+    timers.push({ totalSeconds: total, originalTotal: total, label: null });
     
     inputBuffer = "";
     updateInputDisplay();
     renderList();
 });
 
-// 現在実行中のタイマーを複製して割り込ませる関数
 function duplicateCurrentTimer() {
     if (!isRunning || timers.length === 0) return;
-
     const currentTimer = timers[currentTimerIndex];
-    
     let baseName = currentTimer.label;
-    if (!baseName) {
-        baseName = `#${currentTimerIndex + 1}`;
-    }
+    if (!baseName) baseName = `#${currentTimerIndex + 1}`;
 
     const newTimer = {
         totalSeconds: currentTimer.originalTotal,
         originalTotal: currentTimer.originalTotal,
         label: baseName + "(repeat)"
     };
-
     timers.splice(currentTimerIndex + 1, 0, newTimer);
     renderList();
 }
@@ -126,43 +111,62 @@ function renderList() {
         let nameText = timer.label ? timer.label : `#${displayCount}`;
         if (!timer.label) displayCount++;
 
-        // 左側の名前
+        // 左側：名前
         const nameSpan = document.createElement('span');
         nameSpan.innerText = nameText;
         div.appendChild(nameSpan);
 
-        // 右側のグループ（時間 ＋ アクティブならボタン）
+        // 右側：ボタンと時間
         const rightGroup = document.createElement('div');
         rightGroup.className = 'timer-right-group';
 
         if (isActive) {
-            // リピートボタンの作成
+            // リピートボタン
             const repBtn = document.createElement('button');
             repBtn.innerText = '↺';
             repBtn.className = 'btn-repeat-inline';
             repBtn.onclick = (e) => {
-                e.stopPropagation(); // 親要素へのイベント伝播を止める
+                e.stopPropagation();
                 duplicateCurrentTimer();
             };
             rightGroup.appendChild(repBtn);
         }
 
+        // 時間表示
         const timeSpan = document.createElement('span');
-        timeSpan.innerText = formatTime(timer.originalTotal);
+        // アクティブな場合は残り時間、そうでなければ元の設定時間
+        if (isActive) {
+            timeSpan.innerText = formatTime(remainingSeconds);
+            timeSpan.id = 'active-timer-display'; // tick()更新用の目印
+            timeSpan.classList.add('active-time-text');
+        } else {
+            timeSpan.innerText = formatTime(timer.originalTotal);
+        }
+        
         rightGroup.appendChild(timeSpan);
-
         div.appendChild(rightGroup);
         timerList.appendChild(div);
+        
+        // アクティブな要素が見えるようにスクロール
+        if (isActive) {
+            setTimeout(() => {
+                div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     });
 }
 
-function updateDisplay() {
-    mainDisplay.innerText = formatTime(remainingSeconds);
+// リスト内の特定の要素だけ数字を更新する（再描画負荷を避ける）
+function updateActiveTimerText() {
+    const el = document.getElementById('active-timer-display');
+    if (el) {
+        el.innerText = formatTime(remainingSeconds);
+    }
 }
 
 function tick() {
     remainingSeconds--;
-    updateDisplay();
+    updateActiveTimerText(); // 中央表示の代わりにここを更新
 
     if (remainingSeconds < 0) {
         clearInterval(intervalId);
@@ -175,13 +179,7 @@ function tick() {
 function startNextTimer() {
     if (currentTimerIndex < timers.length) {
         remainingSeconds = timers[currentTimerIndex].totalSeconds;
-        
-        const currentTimer = timers[currentTimerIndex];
-        const statusLabel = currentTimer.label ? currentTimer.label : `#${currentTimerIndex + 1}`;        
-        statusText.innerText = `Running: ${statusLabel}`;
-
         renderList();
-        updateDisplay();
         intervalId = setInterval(tick, 1000);
     } else {
         finishAll();
@@ -195,33 +193,24 @@ startBtn.addEventListener('click', () => {
     isRunning = true;
     startBtn.disabled = true;
     addBtn.disabled = true;
-    // repeatStepBtnの制御は削除
     
     if (remainingSeconds === 0 && currentTimerIndex === 0) {
         remainingSeconds = timers[0].totalSeconds;
     }
     
-    const currentTimer = timers[currentTimerIndex];
-    const statusLabel = currentTimer.label ? currentTimer.label : `#${currentTimerIndex + 1}`;
-    statusText.innerText = `Running: ${statusLabel}`;
-    
     renderList();
-    updateDisplay();
     intervalId = setInterval(tick, 1000);
 });
-
-// repeatStepBtn の addEventListener は削除
 
 function finishAll() {
     isRunning = false;
     clearInterval(intervalId);
-    statusText.innerText = "All Done!";
     startBtn.disabled = false;
     addBtn.disabled = false;
-    // repeatStepBtnの制御は削除
     startBtn.innerText = "Restart";
     currentTimerIndex = 0;
     remainingSeconds = 0;
+    renderList(); // リストを再描画してアクティブ状態を解除
 }
 
 resetBtn.addEventListener('click', () => {
@@ -230,15 +219,10 @@ resetBtn.addEventListener('click', () => {
     timers = [];
     currentTimerIndex = 0;
     remainingSeconds = 0;
-    
     inputBuffer = "";
     updateInputDisplay();
-
     renderList();
-    mainDisplay.innerText = "00:00";
-    statusText.innerText = "Waiting...";
     startBtn.disabled = false;
     addBtn.disabled = false;
-    // repeatStepBtnの制御は削除
     startBtn.innerText = "Start";
 });
