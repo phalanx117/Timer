@@ -32,16 +32,16 @@ body {
 }
 
 /* --- 上部：リストエリア --- */
-/* 画面中央の表示を消したので、リストが大きく広がる */
 .list-area {
     flex: 1; 
     overflow-y: auto;
-    padding: 16px 16px 0 16px; 
+    /* ↓ ここを変更：3番目の数字(下余白)を 0 から 120px に増やしました */
+    padding: 16px 16px 120px 16px; 
     -webkit-overflow-scrolling: touch;
     z-index: 5;
     /* 下の方をコントロールパネルと馴染ませる */
-    mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
 }
 
 .list-area h3 {
