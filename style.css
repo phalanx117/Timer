@@ -76,7 +76,7 @@ body {
     background-color: rgba(10, 132, 255, 0.2);
     border: 1px solid var(--accent-blue);
     color: var(--accent-blue);
-    padding: 20px 16px; /* 少し縦に大きく */
+    padding: 26px 16px; /* 少し縦に大きく */
 }
 
 .timer-right-group {
@@ -87,7 +87,7 @@ body {
 
 /* 実行中の時間文字 */
 .active-time-text {
-    font-size: 32px; /* カウントダウン中は数字を強調 */
+    font-size: 42px; /* カウントダウン中は数字を強調 */
     font-weight: 700;
     font-feature-settings: "tnum";
     letter-spacing: -1px;
