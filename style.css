@@ -183,10 +183,20 @@ body {
     background: var(--btn-bg);
     border: none;
     color: white;
-    font-size: 22px;
-    padding: 10px 0;
-    border-radius: 8px;
+    font-size: 24px; /* 文字も少し大きくするとバランスが良いです */
+    
+    /* ▼▼▼ ここを変更 ▼▼▼ */
+    height: 65px;      /* 好みの高さに数値を調整してください (例: 55px ~ 75px) */
+    padding: 0;        /* padding指定をリセット */
+    /* ▲▲▲ ここまで ▲▲▲ */
+
+    border-radius: 12px; /* ボタンが縦長になるので少し丸みを増やすと今風です */
     touch-action: manipulation;
+    
+    /* 文字をど真ん中に配置する念の為の設定 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .num-btn:active { background: #5a5a5e; }
 
